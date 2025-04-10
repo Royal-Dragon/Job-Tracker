@@ -307,8 +307,8 @@ export default function App() {
                   </div>
 
                   <div className="flex-grow">
-                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">{app.company}</h3>
-                    <p className="text-md text-gray-600 dark:text-gray-300 mb-3">{app.role}</p>
+                    <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-3">{app.company}</h3>
+                    <p className="text-md text-gray-600 dark:text-gray-300 mb-2">{app.role}</p>
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-2">
                       <FiCalendar className="w-4 h-4" />
                       <span className="text-sm">{new Date(app.applicationDate).toLocaleDateString()}</span>
@@ -319,7 +319,7 @@ export default function App() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 text-blue-600 hover:text-blue-700 
-                          dark:text-blue-400 dark:hover:text-blue-300 transition-colors text-sm"
+                          dark:text-blue-400 dark:hover:text-blue-300 transition-colors text-sm mb-2"
                       >
                         <FiLink className="w-4 h-4" />
                         <span className="hover:underline">View Job Posting</span>
