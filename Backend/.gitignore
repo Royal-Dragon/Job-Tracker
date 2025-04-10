@@ -1,0 +1,56 @@
+# .gitignore for Node.js backend
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+
+# Dependency directories
+node_modules/
+
+# Logs and databases
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.pid
+*.seed
+*.dump
+*.db
+/data/db/
+/mongodb-data/
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Coverage directory
+coverage/
+.nyc_output/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Build files
+dist/
+build/
