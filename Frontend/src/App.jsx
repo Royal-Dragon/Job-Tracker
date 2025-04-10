@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { Listbox } from '@headlessui/react'
-import { FiTrash2, FiEdit, FiCalendar, FiLink, FiSun, FiMoon, FiBox } from 'react-icons/fi'
+import { FiTrash2, FiEdit, FiCalendar, FiLink, FiSun, FiMoon, FiBox} from 'react-icons/fi'
+import { FaSortAmountDown,FaSortAmountUp  } from "react-icons/fa";
 import { motion, AnimatePresence } from 'framer-motion'
 const API_URL = import.meta.env.VITE_API_URL;  // Works!
 const statusOptions = ['Applied', 'Interview', 'Offer', 'Rejected']
@@ -11,7 +12,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [notification, setNotification] = useState({ show: false, message: '', type: '' })
-  const [filters, setFilters] = useState({ status: '', fromDate: '' })
+  const [filters, setFilters] = useState({ status: '', fromDate: '', sort: 'latest' })
   const [formData, setFormData] = useState({
     company: '',
     role: '',
@@ -33,7 +34,12 @@ export default function App() {
     setIsLoading(true)
     try {
       const res = await axios.get(API_URL, { params: filters })
-      setApplications(res.data)
+      const sortedApplications = [...res.data].sort((a, b) => {
+        const dateA = new Date(a.applicationDate);
+        const dateB = new Date(b.applicationDate);
+        return filters.sort === 'latest' ? dateB - dateA : dateA - dateB;
+      });
+      setApplications(sortedApplications)
     } catch (err) {
       showNotification('Failed to fetch applications', 'error')
     } finally {
@@ -205,19 +211,38 @@ export default function App() {
             value={filters.fromDate}
             onChange={e => setFilters({ ...filters, fromDate: e.target.value })}
           />
+        
+          <button
+            onClick={() => setFilters({ ...filters, sort: filters.sort === 'latest' ? 'earliest' : 'latest' })}
+            className="flex items-center gap-2 px-4 py-2 border rounded text-gray-700 hover:bg-gray-50 
+              focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors
+              dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600"
+          >
+            {filters.sort === 'latest' ? (
+              <>
+                <FaSortAmountDown className="w-4 h-4" />
+                <span>Latest First</span>
+              </>
+            ) : (
+              <>
+                <FaSortAmountUp className="w-4 h-4" />
+                <span>Earliest First</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* Applications List with loading and empty states */}
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {isLoading ? (
-            <div className="flex justify-center items-center py-8">
+            <div className="col-span-full flex justify-center items-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
           ) : applications.length === 0 ? (
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-8 text-gray-500 dark:text-gray-400"
+              className="col-span-full text-center py-8 text-gray-500 dark:text-gray-400"
             >
               <FiBox className="w-12 h-12 mx-auto mb-4" />
               <p>No applications found. Start by adding your first application!</p>
@@ -231,50 +256,37 @@ export default function App() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className="bg-white rounded-lg shadow p-4 dark:bg-gray-800 dark:text-white"
+                  className="bg-white rounded-lg shadow-md p-5 dark:bg-gray-800 dark:text-white 
+                    transform transition-all duration-200 hover:shadow-xl hover:-translate-y-1 
+                    border border-gray-100 dark:border-gray-700 hover:border-blue-200 
+                    dark:hover:border-blue-800 flex flex-col"
                 >
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">{app.company}</h3>
-                      <p className="text-gray-600 dark:text-gray-300">{app.role}</p>
-                      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                        <FiCalendar className="inline" />
-                        <span>{new Date(app.applicationDate).toLocaleDateString()}</span>
-                      </div>
-                      {app.link && (
-                        <a
-                          href={app.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-blue-600 hover:underline dark:text-blue-400"
-                        >
-                          <FiLink className="inline" />
-                          Job Posting
-                        </a>
-                      )}
+                  <div className="flex justify-between items-start mb-3">
+                    <div className={`px-3 py-1 rounded-full text-sm font-medium transition-colors
+                      ${app.status === 'Applied' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200' :
+                      app.status === 'Interview' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200' :
+                      app.status === 'Offer' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' :
+                      'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'}`}
+                    >
+                      {app.status}
                     </div>
-
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                       <Listbox
                         value={app.status}
                         onChange={(value) => updateStatus(app._id, value)}
                       >
                         <div className="relative">
-                          <Listbox.Button className={`px-4 py-1 rounded-full text-sm font-medium ${
-                            app.status === 'Applied' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200' :
-                            app.status === 'Interview' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200' :
-                            app.status === 'Offer' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' :
-                            'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
-                          }`}>
-                            {app.status}
+                          <Listbox.Button className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <FiEdit className="w-4 h-4" />
                           </Listbox.Button>
-                          <Listbox.Options className="absolute right-0 mt-1 bg-white shadow-lg rounded-md py-1 dark:bg-gray-700">
+                          <Listbox.Options className="absolute right-0 mt-1 w-32 bg-white shadow-lg rounded-md py-1 z-10 dark:bg-gray-700">
                             {statusOptions.map(status => (
                               <Listbox.Option
                                 key={status}
                                 value={status}
                                 className={({ active }) => 
-                                  `px-4 py-2 cursor-pointer ${active ? 'bg-gray-100 dark:bg-gray-600' : ''} text-gray-900 dark:text-gray-100`
+                                  `px-4 py-2 cursor-pointer ${active ? 'bg-blue-50 dark:bg-blue-900/30' : ''} 
+                                  text-gray-900 dark:text-gray-100 text-sm`
                                 }
                               >
                                 {status}
@@ -285,11 +297,34 @@ export default function App() {
                       </Listbox>
                       <button
                         onClick={() => deleteApplication(app._id)}
-                        className="text-red-600 hover:text-red-700 p-2 rounded hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                        className="p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 
+                          text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300
+                          transition-colors"
                       >
-                        <FiTrash2 size={20} />
+                        <FiTrash2 size={16} />
                       </button>
                     </div>
+                  </div>
+
+                  <div className="flex-grow">
+                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">{app.company}</h3>
+                    <p className="text-md text-gray-600 dark:text-gray-300 mb-3">{app.role}</p>
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-2">
+                      <FiCalendar className="w-4 h-4" />
+                      <span className="text-sm">{new Date(app.applicationDate).toLocaleDateString()}</span>
+                    </div>
+                    {app.link && (
+                      <a
+                        href={app.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 
+                          dark:text-blue-400 dark:hover:text-blue-300 transition-colors text-sm"
+                      >
+                        <FiLink className="w-4 h-4" />
+                        <span className="hover:underline">View Job Posting</span>
+                      </a>
+                    )}
                   </div>
                 </motion.div>
               ))}
