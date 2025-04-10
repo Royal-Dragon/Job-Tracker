@@ -3,8 +3,7 @@ import axios from 'axios'
 import { Listbox } from '@headlessui/react'
 import { FiTrash2, FiEdit, FiCalendar, FiLink, FiSun, FiMoon, FiBox } from 'react-icons/fi'
 import { motion, AnimatePresence } from 'framer-motion'
-
-const API_URL = 'http://localhost:5000/api/applications'
+const API_URL = import.meta.env.VITE_API_URL;  // Works!
 const statusOptions = ['Applied', 'Interview', 'Offer', 'Rejected']
 
 export default function App() {
